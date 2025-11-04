@@ -12,11 +12,6 @@ dwmpid() {
 	echo "${tree%%)*}"
 }
 
-lock() {
-	# kill dwm blocks; pause audio; etc.
-	slock
-}
-
 case "$(printf "lock\nleave\nrefresh\nreboot\nshutdown\n" | dmenu -l 5 -i -p 'Action: ')" in
 	'lock') lock ;;
 	'leave') kill -TERM "$(dwmpid)" ;;
