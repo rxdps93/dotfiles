@@ -1,0 +1,14 @@
+#!/bin/sh
+
+xrandr --dpi 96
+# set background here
+pape &
+
+# other progs mpd unclutter remapd pipewire
+autostart="xcompmgr dunst unclutter"
+
+for program in $autostart; do
+	pidof -sx "$program" || "$program" &
+done >/dev/null 2>&1
+
+[ -n "$xrdbpid" ] && wait "$xrdbpid"

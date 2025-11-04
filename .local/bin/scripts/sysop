@@ -1,0 +1,27 @@
+#!/bin/sh
+
+export WM="dwm"
+case "$(readlink -f /sbin/init)" in
+	*systemd*) ctl='systemctl' ;;
+	*) ctl='loginctl' ;;
+esac
+
+dwmpid() {
+	tree="$(pstree -ps $$)"
+	tree="${tree#*$WM(}"
+	echo "${tree%%)*}"
+}
+
+lock() {
+	# kill dwm blocks; pause audio; etc.
+	slock
+}
+
+case "$(printf "lock\nleave\nrefresh\nreboot\nshutdown\n" | dmenu -l 5 -i -p 'Action: ')" in
+	'lock') lock ;;
+	'leave') kill -TERM "$(dwmpid)" ;;
+	'refresh') kill -HUP "$(dwmpid)" ;; # this needs love
+	'reboot') $ctl reboot -i ;;
+	'shutdown') $ctl poweroff -i ;;
+	*) exit 1 ;;
+esac

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Select icon from file
+icon=$(cut -d ';' -f1 ~/.local/share/symbols/* | dmenu -i -l 30 | sed "s/ .*//")
+
+# Gracefully exit if none selected
+[ -z "$icon" ] && exit
+
+if [ -n "$1" ]; then
+	xdotool type "$icon"
+else
+	printf "%s" "$icon" | xclip -selection clipboard
+	notify-send "'$icon' copied to clipboard." &
+fi 

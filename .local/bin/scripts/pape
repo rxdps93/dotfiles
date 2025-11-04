@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Wallpaper location
+papeloc="${XDG_DATA_HOME:-$HOME/.local/share}/wp"
+
+dunstconf="${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc"
+zathuraconf="${XDG_cONFIG_HOME:-$HOME/.config}/zathura/zathurarc"
+
+while getopts "s" o; do case "${o}" in
+	s) silent='1' ;;
+esac done
+
+shift $((OPTIND - 1))
+
+absloc="$(readlink -f "$1")" &&
+	case "$(file --mime-type -b "$absloc")" in
+		image/* ) ln -sf "$absloc" "$papeloc" && [ -z "$silent" ] && notify-send -i "$papeloc" "Setting wallpaper" ;;
+		inode/directory ) ln -sf "$(find "$absloc" -iregex '.*.\(jpg\|jpeg\|png\|gif\)' -type f | shuf -n 1)" "$papeloc" && [ -z "$silent" ] && notify-send -i "$papeloc" "Setting random wallpaper" ;;
+		*) [ -z "$silent" ] && notify-send "Error" "Not a valid image or directory." ; exit 1;;
+	esac
+
+if command -v wal >/dev/null 2>&1 ; then
+	wal -n -i "$(readlink -f $papeloc)" -o "${XDG_CONFIG_HOME:-$HOME/.config}/wal/postrun" >/dev/null 2>&1
+else
+	[ -f "$dunstconf.bak" ] && unlink "$dunstconf" && mv "$dunstconf.bak" "$dunstconf"
+	[ -f "$zathuraconf.bak" ] && unlink "$zathuraconf" && mv "$zathuraconf.bak" "$zathuraconf"
+fi
+
+xwallpaper --zoom "$papeloc"
+
+pidof dwm >/dev/null && xdotool key super+F5
